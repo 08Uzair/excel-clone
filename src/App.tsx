@@ -52,7 +52,7 @@ export default function App() {
   // --- Resizing State ---
   const [colWidths, setColWidths] = useState<{ [colId: string]: number }>({});
   const [rowHeights, setRowHeights] = useState<{ [rowIdx: number]: number }>(
-    {}
+    {},
   );
   const resizingCol = useRef<string | null>(null);
   const resizingRow = useRef<number | null>(null);
@@ -95,10 +95,10 @@ export default function App() {
   const updateOption = (
     idx: number,
     field: "label" | "bgColor",
-    value: string
+    value: string,
   ) => {
     setNewOptions((old) =>
-      old.map((opt, i) => (i === idx ? { ...opt, [field]: value } : opt))
+      old.map((opt, i) => (i === idx ? { ...opt, [field]: value } : opt)),
     );
   };
   const addOptionInput = () => {
@@ -136,7 +136,7 @@ export default function App() {
   const handlePaste = (
     e: React.ClipboardEvent,
     rowIndex: number,
-    columnId: string
+    columnId: string,
   ) => {
     const clipboardText = e.clipboardData.getData("text/plain");
     try {
@@ -176,7 +176,7 @@ export default function App() {
           if (hasDropdown) {
             const selectedLabel = selectedDropdownValues[key] || "";
             const option = dropdowns[key].find(
-              (opt) => opt.label === selectedLabel
+              (opt) => opt.label === selectedLabel,
             );
             const bgColor = option ? option.bgColor : "transparent";
 
@@ -238,8 +238,8 @@ export default function App() {
   const handleEdit = (rowIndex: number, key: string, value: string) => {
     setData((old) =>
       old.map((row, index) =>
-        index === rowIndex ? { ...row, [key]: value } : row
-      )
+        index === rowIndex ? { ...row, [key]: value } : row,
+      ),
     );
     const cellKey = `${rowIndex}-${key}`;
     if (dropdowns[cellKey]) {
@@ -253,8 +253,8 @@ export default function App() {
   const handleHeaderEdit = (accessorKey: string, value: string) => {
     setColumns((old) =>
       old.map((col) =>
-        col.accessorKey === accessorKey ? { ...col, header: value } : col
-      )
+        col.accessorKey === accessorKey ? { ...col, header: value } : col,
+      ),
     );
   };
 
@@ -268,72 +268,70 @@ export default function App() {
       const ws = wb.Sheets[wb.SheetNames[0]];
       const importedData = XLSX.utils.sheet_to_json<Record<string, any>>(ws);
       if (importedData.length > 0) {
-        const importedColumns = Object.keys(importedData[0]).map(
-          (key, index) => ({
-            accessorKey: key,
-            header: key,
-            cell: ({ row }: any) => {
-              const cellKey = `${row.index}-${key}`;
-              const hasDropdown = dropdowns[cellKey];
-              if (hasDropdown) {
-                const selectedLabel = selectedDropdownValues[cellKey] || "";
-                const option = dropdowns[cellKey].find(
-                  (opt) => opt.label === selectedLabel
-                );
-                const bgColor = option ? option.bgColor : "transparent";
+        const importedColumns = Object.keys(importedData[0]).map((key) => ({
+          accessorKey: key,
+          header: key,
+          cell: ({ row }: any) => {
+            const cellKey = `${row.index}-${key}`;
+            const hasDropdown = dropdowns[cellKey];
+            if (hasDropdown) {
+              const selectedLabel = selectedDropdownValues[cellKey] || "";
+              const option = dropdowns[cellKey].find(
+                (opt) => opt.label === selectedLabel,
+              );
+              const bgColor = option ? option.bgColor : "transparent";
 
-                return (
-                  <select
-                    className="border p-1 w-full"
-                    value={selectedLabel}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setSelectedDropdownValues((old) => ({
-                        ...old,
-                        [cellKey]: val,
-                      }));
-                      handleEdit(row.index, key, val);
-                    }}
-                    onFocus={() =>
-                      setSelectedCell({ rowIndex: row.index, columnId: key })
-                    }
-                    onBlur={() => setSelectedCell(null)}
-                    style={{ backgroundColor: bgColor }}
-                    onCopy={(e) => handleCopy(e, cellKey)}
-                    onPaste={(e) => handlePaste(e, row.index, key)}
-                  >
-                    <option value="" disabled>
-                      Select...
-                    </option>
-                    {dropdowns[cellKey].map((opt, idx) => (
-                      <option
-                        key={idx}
-                        value={opt.label}
-                        style={{ backgroundColor: opt.bgColor }}
-                      >
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
-                );
-              }
               return (
-                <input
-                  value={row.original[key] || ""}
-                  onChange={(e) => handleEdit(row.index, key, e.target.value)}
+                <select
+                  className="border p-1 w-full"
+                  value={selectedLabel}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setSelectedDropdownValues((old) => ({
+                      ...old,
+                      [cellKey]: val,
+                    }));
+                    handleEdit(row.index, key, val);
+                  }}
                   onFocus={() =>
                     setSelectedCell({ rowIndex: row.index, columnId: key })
                   }
                   onBlur={() => setSelectedCell(null)}
-                  className="border p-1 w-full"
-                  style={{ backgroundColor: "transparent" }}
+                  style={{ backgroundColor: bgColor }}
                   onCopy={(e) => handleCopy(e, cellKey)}
                   onPaste={(e) => handlePaste(e, row.index, key)}
-                />
+                >
+                  <option value="" disabled>
+                    Select...
+                  </option>
+                  {dropdowns[cellKey].map((opt, idx) => (
+                    <option
+                      key={idx}
+                      value={opt.label}
+                      style={{ backgroundColor: opt.bgColor }}
+                    >
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
               );
-            },
-          })
-        );
+            }
+            return (
+              <input
+                value={row.original[key] || ""}
+                onChange={(e) => handleEdit(row.index, key, e.target.value)}
+                onFocus={() =>
+                  setSelectedCell({ rowIndex: row.index, columnId: key })
+                }
+                onBlur={() => setSelectedCell(null)}
+                className="border p-1 w-full"
+                style={{ backgroundColor: "transparent" }}
+                onCopy={(e) => handleCopy(e, cellKey)}
+                onPaste={(e) => handlePaste(e, row.index, key)}
+              />
+            );
+          },
+        }));
         setColumns(importedColumns);
         setData(importedData);
         setSelectedRowIndex(null);
@@ -358,8 +356,8 @@ export default function App() {
     if (!search) return data;
     return data.filter((row) =>
       Object.values(row).some((val) =>
-        String(val).toLowerCase().includes(search.toLowerCase())
-      )
+        String(val).toLowerCase().includes(search.toLowerCase()),
+      ),
     );
   }, [data, search]);
 
@@ -381,8 +379,8 @@ export default function App() {
             old.map((row, idx) =>
               idx === selectedCell.rowIndex
                 ? { ...row, [selectedCell.columnId]: "" }
-                : row
-            )
+                : row,
+            ),
           );
           const cellKey = `${selectedCell.rowIndex}-${selectedCell.columnId}`;
           setDropdowns((old) => {
@@ -403,14 +401,14 @@ export default function App() {
             old.map((col) =>
               col.accessorKey === selectedColumnId
                 ? { ...col, header: "" }
-                : col
-            )
+                : col,
+            ),
           );
           setData((old) =>
             old.map((row) => ({
               ...row,
               [selectedColumnId]: "",
-            }))
+            })),
           );
           setSelectedDropdownValues((old) => {
             const updated = { ...old };
@@ -724,6 +722,7 @@ export default function App() {
                 {/* Data cells */}
                 {row.getVisibleCells().map((cell) => {
                   const key = `${row.index}-${cell.column.id}`;
+                  console.log(cell.getValue(), "This is cell value");
                   const isFocused =
                     selectedCell?.rowIndex === row.index &&
                     selectedCell?.columnId === cell.column.id;
@@ -735,7 +734,7 @@ export default function App() {
                   if (options) {
                     const selectedLabel = selectedDropdownValues[key] || "";
                     const option = options.find(
-                      (opt) => opt.label === selectedLabel
+                      (opt) => opt.label === selectedLabel,
                     );
                     const bgColor = option ? option.bgColor : "transparent";
 
@@ -828,7 +827,7 @@ export default function App() {
                       }
                     >
                       <input
-                        value={cell.getValue() ?? ""}
+                        value={String(cell.getValue()) ?? ""}
                         onChange={(e) =>
                           handleEdit(row.index, cell.column.id, e.target.value)
                         }
